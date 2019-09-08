@@ -1,25 +1,35 @@
 defmodule Project1.Vampire.FactorCalculator3 do
-	use GenServer
 
-	def start_link(range) do
-		{:ok, pid} = GenServer.start_link(__MODULE__, range)
-		IO.puts "#{inspect(pid)}"
-		{:ok, pid}
+	def get_vampire_factors(range, pid) do
+		Enum.each(range, fn n ->
+      		case vampire_factors(n) do
+	        	[] -> {:cont}
+	        	fangs -> GenServer.cast(pid, {:result, "#{n} #{Enum.flat_map(fangs, fn {a,b} -> ["#{a}","#{b}"] end) |> Enum.join(" ")}"})
+      		end
+    	end)
 	end
 
-	def init(range) do
-		blah()
-		{:ok, range}
-	end
+	defp factor_pairs(n) do
+	    first = trunc(n / :math.pow(10, div(char_len(n), 2)))
+	    last = :math.sqrt(n) |> round
+	    for i <- first..last, rem(n, i) == 0, do: {i, div(n, i)}
+  	end
 
-	def blah do
-		IO.puts "Here"
-		GenServer.call(self(), {:blah2})
-	end
+	 defp vampire_factors(n) do
+	    if rem(char_len(n), 2) == 1 do
+	      []
+	    else
+	      half = div(length(to_charlist(n)), 2)
+	      sorted = Enum.sort(String.codepoints("#{n}"))
+	      Enum.filter(factor_pairs(n), fn
+	        {a, b} ->
+	          	char_len(a) == half && char_len(b) == half &&
+	            Enum.count([a, b], fn x -> rem(x, 10) == 0 end) != 2 &&
+	            Enum.sort(String.codepoints("#{a}#{b}")) == sorted
+	      end)
+	    end
+  	end
 
-	def handle_call({:blah2}, _from, state) do
-		IO.puts "Here"
-		{:reply, state, state}
-	end
+  	defp char_len(n), do: length(to_charlist(n))
 
 end

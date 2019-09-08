@@ -12,6 +12,7 @@ defmodule Project1.Vampire.Supervisor2 do
 		
 	
 		supervise(children, strategy: :one_for_one)
+		
 	end
 
 
